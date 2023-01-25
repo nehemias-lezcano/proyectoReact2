@@ -1,0 +1,15 @@
+.navBar{
+    background-color: rebeccapurple;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+.option{
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+}
+.option li{
+    margin-left: 30px ;
+}
