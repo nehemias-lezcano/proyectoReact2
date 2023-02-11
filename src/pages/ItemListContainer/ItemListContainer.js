@@ -1,7 +1,9 @@
-import ItemCount from "../../componets/ItemCount/ItemCount";
+//import ItemCount from "../../componets/ItemCount/ItemCount";
 import { useEffect, useState } from 'react';
 import ItemList from "../../componets/ItemList/ItemList";
 import { useParams } from "react-router-dom";
+import Loading from "../../componets/Loading/Loading";
+import { getFirestore, getDocs, collection, query, where } from "firebase/firestore";
 const arreglo = [
   {title: 'Pc Asus Prime 06', id: '1', price: '$150.000', pictureUrl: "./img/pc1.jpg"},
   {title: 'Pc Asus Rog Strix 11', id: '2' , price: '$160.000' , pictureUrl:"./img/pc2.jpg"},
@@ -16,29 +18,44 @@ const arreglo = [
 const ItemListContainer = ({ greeting }) => {
 
    const [products, setProducts] = useState ([]);
-   const [filteredProducts, setFilteredProducts] = useState([])
+   const [ loading, setLoading ] = useState(true)
    const { category } = useParams();
 
+  const getProducts = () => {
+    const db = getFirestore();
+    const querySnapshot = collection(db, "items");
 
-    const getProducts = fetch('https://fakestoreapi.com/products',{
-      method: 'GET',
-      headers: {
-        'conten-type' : 'json'
-      }
-    })
-
-    useEffect(() => {
-      getProducts
-      .then((res) => {
-        return res.json();
+      if(category){
+        const newConfiguration = query(querySnapshot, where("categoryId", "==", category))
+        
+        getDocs(newConfiguration)
+      .then((response) => {
+        const data = response.docs.map((doc) => {
+          return {id: doc.id, ...doc.data()};
+        })
+        setLoading(false)
+        setProducts(data);
       })
-       .then((response) => {
-        setProducts(response);
-      }) 
-     .catch((error) => console.log(error))
-    }, [])
+      .catch(error => console.log(error))
+      }
+      else{
+        getDocs(querySnapshot)
+        .then((response) => {
+          const data = response.docs.map((doc) => {
+            return {id: doc.id, ...doc.data()};
+          })
+          setLoading(false)
+          setProducts(data);
+        })
+        .catch(error => console.log(error))
+      }
+  };
 
     useEffect(() => {
+      getProducts();
+    }, [category])
+
+/*     useEffect(() => {
       if(category){
         const removeCharacters = category?.includes('%20')
         ? category.replace('%20', ' ') 
@@ -48,15 +65,15 @@ const ItemListContainer = ({ greeting }) => {
        });
          setFilteredProducts(filterProducts);
       }
-    }, [category]);
+    }, [category]); */
 
-
+  if(loading) {
+    return <Loading />
+  }
   return (
     <div>
         {greeting}
-        <ItemCount />
-        <ItemList productos={category ? filteredProducts : products} />
-        <h1>este es un producto solo</h1>
+        <div><ItemList productos={products} /></div>
     </div>
   )
 }

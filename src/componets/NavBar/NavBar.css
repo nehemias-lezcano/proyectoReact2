@@ -12,4 +12,8 @@
 }
 .option li{
     margin-left: 30px ;
+    font-size: 18px;
+}
+ul li a{
+    text-decoration: none;
 }
